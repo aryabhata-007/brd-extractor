@@ -1,0 +1,5 @@
+ffmpeg-python
+openai>=1.0.0
+streamlit
+python-dotenv
+assemblyai
