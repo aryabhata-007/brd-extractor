@@ -9,7 +9,7 @@ import time
 
 # Page configuration
 st.set_page_config(
-    page_title="BizSpec Pro",
+    page_title="BizDoc AI",
     page_icon="📄",
     layout="centered"
 )
@@ -19,6 +19,7 @@ st.markdown("""
     <style>
     .main {
         padding: 2rem;
+        background-color: #ffffff;
     }
     
     .header-style {
@@ -26,7 +27,7 @@ st.markdown("""
         font-weight: bold;
         text-align: center;
         margin-bottom: 2rem;
-        color: #ffffff;
+        color: #1E1E1E;  /* Dark text for light theme */
         display: flex;
         justify-content: center;
         align-items: center;
@@ -43,61 +44,97 @@ st.markdown("""
     
     .title {
         font-size: 1.8rem;
-        color: #ffffff;
+        color: #2D2D2D;  /* Darker text for light theme */
         text-align: center;
         max-width: 800px;
         line-height: 1.4;
         font-weight: 600;
         letter-spacing: 0.5px;
         margin: 0;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        text-shadow: none;  /* Remove shadow for light theme */
     }
     
     .processing-status {
-        background-color: #1E1E1E;
+        background-color: #F8F9FA;  /* Light gray background */
+        border: 1px solid #E9ECEF;  /* Subtle border */
         border-radius: 10px;
         padding: 20px;
         margin-top: 1rem !important;
         margin-bottom: 1rem;
+        color: #1E1E1E;  /* Dark text */
     }
     
     .step-text {
-        color: #ffffff;
+        color: #1E1E1E;  /* Dark text for light theme */
         margin: 10px 0;
     }
     
-    /* Custom button styles */
+    /* Unified button styles - no hover effects */
     .stButton > button, .stDownloadButton > button {
         background: linear-gradient(to right, #FF4B2B, #FF416C);
-        color: white;
+        color: white !important;  /* Force white text always */
         border: none;
         padding: 0.75rem 2rem;
         border-radius: 5px;
-        transition: all 0.3s ease;
         font-size: 1.1rem;
         font-weight: 500;
         white-space: nowrap;
+        transition: none !important;  /* Disable all transitions */
     }
     
-    /* Clear button specific style */
+    /* Clear button style - just different background */
     .stButton > button[data-testid="clear"] {
         background: linear-gradient(to right, #4B4B4B, #2B2B2B);
+        color: white !important;
     }
     
-    .stButton > button:hover, .stDownloadButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4);
+    /* Disable hover effects completely */
+    .stButton > button:hover, .stDownloadButton > button:hover,
+    .stButton > button:active, .stDownloadButton > button:active,
+    .stButton > button:focus, .stDownloadButton > button:focus {
+        color: white !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        transition: none !important;
     }
     
-    /* Clear button hover */
-    .stButton > button[data-testid="clear"]:hover {
-        box-shadow: 0 5px 15px rgba(75, 75, 75, 0.4);
+    /* How It Works section */
+    .stMarkdown h3 {
+        color: #1E1E1E;
+        margin-top: 2rem;
     }
     
-    /* Remove any default container margins */
-    .stContainer {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
+    .stMarkdown h4 {
+        color: #2D2D2D;
+        margin-bottom: 1rem;
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background-color: #F8F9FA !important;
+        color: #1E1E1E !important;
+        border: 1px solid #E9ECEF;
+    }
+    
+    /* Text area styling */
+    .stTextArea textarea {
+        color: #1E1E1E !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #E9ECEF !important;
+    }
+    
+    /* File uploader styling */
+    .stFileUploader {
+        background-color: #F8F9FA !important;
+        border: 1px dashed #CED4DA !important;
+        color: #1E1E1E !important;
+    }
+    
+    /* Select box styling */
+    .stSelectbox > div > div {
+        background-color: #F8F9FA !important;
+        color: #1E1E1E !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -188,12 +225,14 @@ def main():
         st.session_state.current_step = 0
     if 'results' not in st.session_state:
         st.session_state.results = None
+    if 'form_key' not in st.session_state:
+        st.session_state.form_key = 0
 
     # Header
     st.markdown("""
         <div class="header-style">
             <span>📄</span>
-            <span>BizSpec Pro</span>
+            <span>BizDoc AI</span>
         </div>
         """, unsafe_allow_html=True)
     st.markdown("""
@@ -207,7 +246,7 @@ def main():
         st.error("🔑 API keys not found! Please check your configuration.")
         return
     
-    with st.form("brd_form", clear_on_submit=False):
+    with st.form(f"brd_form_{st.session_state.form_key}", clear_on_submit=False):
         uploaded_file = st.file_uploader(
             "📁 Upload your meeting recording",
             type=["mp4", "mkv", "mov"],
@@ -298,10 +337,11 @@ def main():
                             )
                         with col3:
                             if st.button("🔄 Clear", use_container_width=True):
-                                # Reset the session state
+                                # Reset all session state
                                 st.session_state.processing_complete = False
                                 st.session_state.current_step = 0
                                 st.session_state.results = None
+                                st.session_state.form_key += 1
                                 st.rerun()
                 
                 os.unlink(audio_path)
@@ -330,7 +370,7 @@ def main():
             with col3:
                 st.markdown("""
                     #### 3️⃣ Generate
-                    Get a professionally structured BRD document
+                    Get a professionally structured BRD
                 """)
 
 if __name__ == "__main__":
